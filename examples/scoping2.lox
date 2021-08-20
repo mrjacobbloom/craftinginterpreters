@@ -1,0 +1,10 @@
+var a = "global (this should print twice)";
+{
+  fun showA() {
+    print a;
+  }
+
+  showA();
+  var a = "block (this should never print)";
+  showA();
+}

@@ -1,0 +1,25 @@
+# CHAPTER 5: REPRESENTING CODE, CHALLENGE 1
+
+# PROMPT:
+# Earlier, I said that the |, *, and + forms we added to our grammar metasyntax
+# were just syntactic sugar. Take this grammar:
+# 
+# expr → expr ( "(" ( expr ( "," expr )* )? ")" | "." IDENTIFIER )+
+#      | IDENTIFIER
+#      | NUMBER
+# Produce a grammar that matches the same language but does not use any of that
+# notational sugar.
+# 
+# Bonus: What kind of expression does this bit of grammar encode?
+
+
+expr -> call_or_member_access
+expr -> IDENTIFIER
+expr -> NUMBER
+
+call_or_member_access -> expr # pretty sure this is an illegal infinite loop
+call_or_member_access -> call_or_member_access "." INDENTIFIER
+call_or_member_access -> call_or_member_access  "(" expr_list ")" 
+
+expr_list -> expr
+expr_list -> expr "," expr_list

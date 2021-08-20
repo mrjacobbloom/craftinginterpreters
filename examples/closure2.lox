@@ -1,0 +1,34 @@
+// Make sure different closures retain different copies of local variables
+
+class State {
+  init(get, set) {
+    this.get = get;
+    this.set = set;
+  }
+}
+
+fun useState() {
+  var value;
+  fun getValue() {
+    return value;
+  }
+  fun setValue(newValue) {
+    value = newValue;
+  }
+
+  return State(getValue, setValue);
+}
+
+var state1 = useState(); // Can you tell my day job is React developer
+var state2 = useState();
+var state3 = useState();
+
+state1.set("foo");
+state2.set("bar");
+state3.set("baz");
+
+if (state1.get() == "foo" and state2.get() == "bar" and state3.get() == "baz") {
+  print "Success!";
+} else {
+  print "Fail!";
+}

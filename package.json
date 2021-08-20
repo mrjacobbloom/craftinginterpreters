@@ -1,0 +1,25 @@
+{
+  "name": "craftinginterpreters",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "jlox": "node --experimental-specifier-resolution=node dist/jlox/index.js",
+    "clox": "node --experimental-specifier-resolution=node dist/clox/index.js",
+    "jlox-inspect": "node --experimental-specifier-resolution=node --inspect --inspect-brk dist/jlox/index.js",
+    "clox-inspect": "node --experimental-specifier-resolution=node --inspect --inspect-brk dist/clox/index.js"
+  },
+  "type": "module",
+  "author": "Jacob Bloom",
+  "license": "ISC",
+  "dependencies": {
+    "@types/chai": "^4.2.21",
+    "@types/node": "^16.4.0",
+    "@typescript-eslint/eslint-plugin": "^4.29.0",
+    "@typescript-eslint/parser": "^4.29.0",
+    "chai": "^4.3.4",
+    "eslint": "^7.32.0",
+    "typescript": "^4.3.5"
+  }
+}

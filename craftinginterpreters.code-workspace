@@ -1,0 +1,18 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.exclude": {
+			"node_modules": true
+		},
+		"cSpell.words": [
+			"UPVALUE",
+			"clox",
+			"jlox",
+			"upvalues"
+		]
+	}
+}

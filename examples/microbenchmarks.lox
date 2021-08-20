@@ -1,0 +1,232 @@
+// Microbenchmarks to compare jlox and clox performance
+// Most of the iteration counts are adjusted so the given benchmark takes around 10 secs in jlox on my machine
+// On my machine, the whole suite takes about 109 secs in jlox and 5.5 secs in clox
+
+// This provides a similar API to mocha: suite.register(name, callback) and suite.only/suite.skip methods with the same params
+class BenchmarkSuite {
+  init() {
+    this.benchmarksHead = nil; // linked list of Benchmarks -- I hadn't given clox a builtin Array type when I was building this
+    this.hasExclusiveTests = false;
+    class Benchmark {
+      init(name, cb, type) {
+        this.name = name;
+        this.cb = cb;
+        this.type = type;
+        this.next = nil;
+      }
+    }
+    this.Benchmark = Benchmark;
+  }
+
+  _add(newBenchmark) { // Add a benchmark to the end of the linked list, so they're in chronological order
+    if (this.benchmarksHead) {
+      var current = this.benchmarksHead;
+      while(current.next) current = current.next;
+      current.next = newBenchmark;
+    } else {
+      this.benchmarksHead = newBenchmark;
+    }
+  }
+
+  register(name, cb) {
+    this._add(this.Benchmark(name, cb, "normal"));
+  }
+
+  only(name, cb) {
+    this._add(this.Benchmark(name, cb, "exclusive"));
+    this.hasExclusiveTests = true;
+  }
+
+  skip(name, cb) {
+    this._add(this.Benchmark(name, cb, "skipped"));
+  }
+
+  run() {
+    var totalStartTime = clock();
+    print "== " + runtime() + " benchmarks ==";
+    var benchmark = this.benchmarksHead;
+    while (benchmark) {
+      if (benchmark.type == "skipped" or (this.hasExclusiveTests and benchmark.type == "normal")) {
+        print "  - [skipped] " + benchmark.name;
+      } else {
+        var startTime = clock();
+        benchmark.cb();
+        print "  - " + benchmark.name + " " + toString(clock() - startTime);
+      }
+      benchmark = benchmark.next;
+    }
+    print "Total time: " + toString(clock() - totalStartTime) + " (" + runtime() + ")";
+  }
+}
+var suite = BenchmarkSuite();
+
+// I don't want to actually print a bunch of dummy values, so here's another operation instead
+var myCoolGlobal;
+fun notPrint(value) { myCoolGlobal = value; }
+
+var a = 0; var b = 1; var temp;
+fun fibGlobals() {
+  for (var iters = 0; iters < 1060000; iters = iters + 1) {
+    notPrint(a);
+    temp = a;
+    a = b;
+    b = temp + b;
+  }
+}
+suite.register("Fib iterative (globals)", fibGlobals);
+
+
+
+fun fibLocals() {
+  var a = 0;
+  var b = 1;
+  var temp;
+  for (var iters = 0; iters < 1060000; iters = iters + 1) {
+    notPrint(a);
+    temp = a;
+    a = b;
+    b = temp + b;
+  }
+}
+suite.register("Fib iterative (locals)", fibLocals);
+
+
+
+
+fun fibUpvalues() {
+  var a = 0;
+  var b = 1;
+  var temp;
+  fun inner() {
+    for (var iters = 0; iters < 1060000; iters = iters + 1) {
+      notPrint(a);
+      temp = a;
+      a = b;
+      b = temp + b;
+    }
+  }
+  return inner;
+}
+suite.register("Fib iterative (upvalues)", fibUpvalues());
+
+
+
+
+fun fibRecursive() {
+  fun fib(n) {
+    if (n <= 1) return n;
+    return fib(n - 2) + fib(n - 1);
+  }
+
+  for (var i = 0; i < 26; i = i + 1) {
+    notPrint(fib(i));
+  }
+}
+suite.register("Fib recursive", fibRecursive);
+
+
+
+
+fun currying() {
+  fun a(arg1) {
+    fun b() {
+      var arg2 = 2;
+      fun c() {
+        var arg3 = arg1 + 3;
+        fun d() {
+          notPrint(arg1 + arg2 + arg3);
+        }
+        return d;
+      }
+      return c;
+    }
+    return b;
+  }
+  for (var i = 0; i < 170000; i = i + 1) {
+    a(1)()()();
+  }
+}
+suite.register("Currying", currying);
+
+
+
+
+
+fun returnDeeplyNested() {
+  fun inner() {
+    while (true) {
+      if (true) {
+        while (true) {
+          if (true) {
+            while (true) {
+              if (true) {
+                return 1;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  for (var iters = 0; iters < 300000; iters = iters + 1) {
+    inner();
+  }
+}
+suite.register("Return from deeply nested statement", returnDeeplyNested);
+
+
+
+fun unoptimizedInvoke() {
+  class Class {
+    method(arg) { notPrint(arg); }
+  }
+  var instance = Class();
+  for (var i = 0; i < 1000000; i = i + 1) {
+    (instance.method)(1);
+  }
+}
+suite.register("Unoptimized method invoke", unoptimizedInvoke);
+
+fun optimizedInvoke() {
+  class Class {
+    method(arg) { notPrint(arg); }
+  }
+  var instance = Class();
+  for (var i = 0; i < 1000000; i = i + 1) {
+    instance.method(1);
+  }
+}
+suite.register("Optimized method invoke", optimizedInvoke);
+
+fun unoptimizedSuperInvoke() {
+  class Super {
+    method(arg) { notPrint(arg); }
+  }
+  class Class < Super {
+    init() {
+      for (var i = 0; i < 1000000; i = i + 1) {
+        (super.method)(1);
+      }
+    }
+  }
+  Class();
+}
+suite.register("Unoptimized super invoke", unoptimizedSuperInvoke);
+
+fun optimizedSuperInvoke() {
+  class Super {
+    method(arg) { notPrint(arg); }
+  }
+  class Class < Super {
+    init() {
+      for (var i = 0; i < 1000000; i = i + 1) {
+        super.method(1);
+      }
+    }
+  }
+  Class();
+}
+suite.register("Optimized super invoke", optimizedSuperInvoke);
+
+
+suite.run();

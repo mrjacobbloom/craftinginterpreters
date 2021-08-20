@@ -1,0 +1,44 @@
+// Ignore this, I never got it working
+
+var Promise;
+
+{
+  class PromiseInstance {
+    init() {
+      this._status = "pending";
+      this._value = nil;
+      this._next = nil; // No array structures to speak of means we can't have an array of nextcallbacks
+      // But that's not how promises work... calling then() returns an entirely new promise object
+    }
+    then(callbackOrPromise) {
+      if (typeOf(callbackOrPromise) == "object") {
+        return callbackOrPromise;
+      }
+    }
+  }
+  class PromiseConstructor {
+    init() {
+      this.new = PromiseInstance;
+    }
+    resolve(value) {
+      var p = PromiseInstance();
+      p.status = "resolved";
+      p.value = value;
+    }
+  }
+  Promise = PromiseConstructor();
+}
+
+fun waitASec(resolve) {
+  fun resolveInASec() {
+    resolve("yay");
+  }
+  schedule(1, resolveInASec);
+}
+
+fun printValue(value) {
+  print value;
+}
+
+Promise.new(waitASec)
+  .then();

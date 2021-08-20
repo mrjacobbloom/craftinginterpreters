@@ -1,0 +1,102 @@
+// Lox doesn't have a collection type
+// It also doesn't have classes yet, but it does have closures
+// Let's build a janky linked list, baybee!
+
+var add;
+var getAt;
+var setAt;
+var length;
+var printLL;
+fun LinkedList() { // I probably didn't need to wrap this in a closure like this, it just feels cleaner to my apparently OOP-obsessed brain because it encapsulates our state and leaves us the option to create multiple linked lists.
+  var length_ = 0;
+  var nodeValue;
+  var nodeIndex;
+  var setValue;
+  fun Node(nodeValue_, globalifyNext_) {
+    var nodeIndex_ = length_;
+    fun setValue_(newValue) { nodeValue_ = newValue; }
+    // I don't know what the word for this is, so I made one up, but it's the core of this program
+    // This function sets these upvalues to the data stored in the closure, so it can be accessed from an outside scope
+    fun globalify_() {
+      nodeValue = nodeValue_;
+      nodeIndex = nodeIndex_;
+      setValue =  setValue_;
+      return globalifyNext_;
+    }
+
+    return globalify_;
+  }
+
+  var globalifyHead = nil;
+
+  fun getNodeAt(goalIndex) {
+    if (globalifyHead == nil) return false;
+    if (goalIndex < 0 or goalIndex >= length_) return false;
+
+    var globalifyNext = globalifyHead;
+    nodeIndex = -1;
+    // Since we can't delete/move/insert nodes, this should be robust enough. I think.
+    while(nodeIndex != goalIndex) globalifyNext = globalifyNext();
+    return true;
+  }
+
+  fun add_(value) {
+    globalifyHead = Node(value, globalifyHead);
+    length_ = length_ + 1;
+  }
+
+  fun getAt_(goalIndex) {
+    if (getNodeAt(goalIndex)) {
+      return nodeValue;
+    } else {
+      return nil;
+    }
+  }
+
+  fun setAt_(goalIndex, newValue) {
+    if (getNodeAt(goalIndex)) {
+      setValue(newValue);
+    }
+  }
+
+  fun lengthFun() { // Too many levels of indirection, oh no
+    return length_;
+  }
+
+  fun printLL_() {
+    if (globalifyHead == nil) {
+      print "[ empty ]";
+    } else {
+      var out = "[ ";
+      var globalifyNext = globalifyHead;
+      for(var i = 0; i < length_; i = i + 1) {
+        out = out + toString(i) + ": " + toString(getAt_(i));
+        if (i != length_ - 1) out = out + ", ";
+      }
+      print out + " ]";
+    }
+  }
+
+  add = add_;
+  getAt = getAt_;
+  setAt = setAt_;
+  length = lengthFun;
+  printLL = printLL_;
+}
+
+print "creating LL";
+LinkedList();
+
+print "length() -> " + toString(length());
+
+print "add('foo') at 0"; add("foo");
+print "add('bar') at 1"; add("bar");
+print "add('baz') at 2"; add("baz");
+
+print "setAt(1, 'qux')"; setAt(1, "qux");
+
+print "length() -> " + toString(length());
+
+for(var i = 0; i < length(); i = i + 1) print "getAt(" + toString(i) + ") -> " + toString(getAt(i));
+
+printLL();

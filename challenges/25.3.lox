@@ -1,0 +1,52 @@
+// CHAPTER 25: CLOSURES, CHALLENGE 3
+
+// PROMPT:
+// A famous koan teaches us that “objects are a poor man’s closure” (and vice versa).
+// Our VM doesn’t support objects yet, but now that we have closures we can approximate them.
+// Using closures, write a Lox program that models two-dimensional vector “objects”. It should:
+// - Define a “constructor” function to create a new vector with the given x and y coordinates.
+// - Provide “methods” to access the x and y coordinates of values returned from that constructor.
+// - Define an addition “method” that adds two vectors and produces a third.
+
+var getXTemp;
+var getYTemp;
+var setXTemp;
+var setYTemp;
+var stringifyTemp;
+
+fun Vector(x, y) {
+  fun getX() { return x; }
+  fun getY() { return y; }
+  fun setX(newX) { x = newX; }
+  fun setY(newY) { y = newY; }
+  fun stringify() { return "Vector(" + toString(x) + "," + toString(y) + ")"; }
+
+  getXTemp = getX;
+  getYTemp = getY;
+  setXTemp = setX; // yeesh this is terrible
+  setYTemp = setY;
+  stringifyTemp = stringify;
+}
+
+fun addVectors(getX1, getY1, getX2, getY2) {
+  Vector(getX1() + getX2(), getY1() + getY2());
+}
+
+Vector(1,2);
+var getXA = getXTemp;
+var getYA = getYTemp;
+var setXA = setXTemp;
+var setYA = setYTemp;
+var stringifyA = stringifyTemp;
+
+Vector(3,4);
+var getXB = getXTemp;
+var getYB = getYTemp;
+var setXB = setXTemp;
+var setYB = setYTemp;
+var stringifyB = stringifyTemp;
+setXB(5);
+setYB(6);
+
+addVectors(getXA, getYA, getXB, getYB);
+print "addVectors(" + stringifyA() + ", " + stringifyB() + ") => " + stringifyTemp();

@@ -1,0 +1,7 @@
+// this is a comment
+(( )){} // grouping stuff
+!*+-/=<> <= == // operators
+"hello" // string
+123 123.456 // numbers
+bleb orchid // identifier
+if else and or true false // keywords

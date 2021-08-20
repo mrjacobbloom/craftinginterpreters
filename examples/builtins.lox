@@ -1,0 +1,62 @@
+// Test suite for builtins
+// Doesn't test runtimeErrors, like validation of arg types, since they end the program entirely
+
+fun signpost(name) { print ""; print "== " + name + " =="; }
+fun assert(name, passed) {
+  var prepend = "";
+  if (passed == false) prepend = "[FAILED] ";
+  print "  " + prepend + name;
+}
+fun assertEq(name, actual, expected) {
+  var prepend = "";
+  if (actual != expected) prepend = "[FAILED] ";
+  print "  " + prepend + name + " -> '" + toString(actual) + "'";
+}
+
+// Dummy data
+fun myFun() {}
+class MyClass {}
+var myInstance = MyClass();
+
+signpost("clock");
+assert("clock returns a number", typeOf(clock()) == "number");
+assert("clock() > 1629359626", clock() > 1629359626);
+
+signpost("toString");
+assertEq("toString('foo')", toString("foo"), "foo");
+assertEq("toString(1)", toString(1), "1");
+assertEq("toString(true)", toString(true), "true");
+assertEq("toString(nil)", toString(nil), "nil");
+assertEq("toString(myFun)", toString(myFun), "<fn myFun>");
+assertEq("toString(clock)", toString(clock), "<native fn>");
+assertEq("toString(MyClass)", toString(MyClass), "MyClass");
+assertEq("toString(myInstance)", toString(myInstance), "MyClass instance");
+
+signpost("runtime");
+assert("runtime() == 'clox' or runtime() == 'jlox'", runtime() == "clox" or runtime() == "jlox");
+
+signpost("typeOf");
+assertEq("typeOf('foo')", typeOf("foo"), "string");
+assertEq("typeOf(1)", typeOf(1), "number");
+assertEq("typeOf(true)", typeOf(true), "boolean");
+assertEq("typeOf(nil)", typeOf(nil), "nil");
+assertEq("typeOf(myFun)", typeOf(myFun), "function");
+assertEq("typeOf(clock)", typeOf(clock), "function");
+assertEq("typeOf(MyClass)", typeOf(MyClass), "function");
+assertEq("typeOf(myInstance)", typeOf(myInstance), "object");
+
+signpost("schedule");
+var global = 1;
+var startTime = clock();
+fun genScheduleCallback() { // This is just so we can test whether upvalues work here
+  var closed = 2;
+  fun scheduleCallback() {
+    var local = 3;
+    assert("global == 1", global == 1);
+    assert("closed == 2", closed == 2);
+    assert("local == 3", local == 3);
+    assert("clock() - startTime > 1", clock() - startTime > 1);
+  }
+  return scheduleCallback;
+}
+schedule(3, genScheduleCallback());

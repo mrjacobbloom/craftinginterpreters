@@ -1,0 +1,73 @@
+// Lox doesn't have a collection type. Let's make one!
+
+class LinkedList {
+  init() {
+    this.head = nil;
+    this.length = 0;
+
+    class LLNode {
+      init(value, next, index) {
+        this.value = value;
+        this.next = next;
+        this.index = index;
+      }
+    }
+    this.LLNode = LLNode;
+  }
+
+  add(value) {
+    this.head = this.LLNode(value, this.head, this.length);
+    this.length = this.length + 1;
+  }
+
+  _getNodeAt(goalIndex) {
+    if (this.head == nil) return nil;
+    if (goalIndex < 0 or goalIndex >= this.length) return nil;
+    var current = this.head;
+    // Since we can't delete/move/insert nodes, this should be robust enough. I think.
+    while(current.index != goalIndex) current = current.next;
+    return current;
+  }
+
+  getAt(goalIndex) {
+     var node = this._getNodeAt(goalIndex);
+     if (node == nil) return nil;
+     return node.value;
+  }
+
+  setAt(goalIndex, newValue) {
+     var node = this._getNodeAt(goalIndex);
+     if (node != nil) node.value = newValue;
+  }
+
+  printLL() {
+    if (this.head) {
+      var out = "[ ";
+      for(var i = 0; i < this.length; i = i + 1) {
+        out = out + toString(i) + ": " + toString(this._getNodeAt(i).value);
+        if (i != this.length - 1) out = out + ", ";
+      }
+      print out + " ]";
+    } else {
+      print "[ empty ]";
+    }
+  }
+}
+
+var startTime = clock();
+print "creating LL";
+var ll = LinkedList();
+
+print "adding 10000 items";
+for (var i = 0; i < 10000; i = i + 1) {
+  ll.add(1);
+}
+
+print "summing 10000 items";
+var sum = 0;
+for (var i = 0; i < 10000; i = i + 1) {
+  sum = sum + ll.getAt(1);
+}
+
+print "total = " + toString(sum);
+print "time: " + toString(clock() - startTime) + " secs";
